@@ -79,34 +79,32 @@ with tab4:
         <p style='color:gray;'>Μέσω WeatherAPI.com</p>
     """, unsafe_allow_html=True)
 
-    API_KEY = "efc3e0e550ae45c98b5184129252107"
-    city = "Corfu"
-    url = f"https://api.weatherapi.com/v1/current.json?key={API_KEY}&q={city}&lang=el"
+    API_KEY = "efc3e0e550ae45c98b5184129252107"  # βάλε το σωστό εδώ
+city = "Corfu"
+url = f"https://api.weatherapi.com/v1/current.json?key={API_KEY}&q={city}&lang=el"
 
-    @st.cache_data(ttl=600)
-    def get_weather():
-        try:
-            res = requests.get(url)
-            if res.status_code == 200:
-                return res.json()
-            else:
-                st.error(f"❌ Σφάλμα API: {res.status_code}")
-                return None
-        except:
+def get_weather():
+    try:
+        res = requests.get(url)
+        if res.status_code == 200:
+            return res.json()
+        else:
+            st.error(f"❌ Σφάλμα API: {res.status_code}")
             return None
+    except Exception as e:
+        st.error(f"❌ Σφάλμα σύνδεσης: {e}")
+        return None
 
-    data = get_weather()
-    if data:
-        current = data['current']
-        condition = current['condition']['text']
-        icon = current['condition']['icon']
+data = get_weather()
 
-        st.success(f"🌡️ Θερμοκρασία: {current['temp_c']} °C")
-        st.write(f"💧 Υγρασία: {current['humidity']}%")
-        st.write(f"💨 Άνεμος: {current['wind_kph']} km/h")
-        st.write(f"☁️ Κατάσταση: {condition}")
-        st.image("https:" + icon, width=64)
-    else:
-        st.warning("⚠️ Δεν βρέθηκαν δεδομένα.")
+if data:
+    current = data['current']
+    st.success(f"🌡 Θερμοκρασία: {current['temp_c']} °C")
+    st.write(f"💧 Υγρασία: {current['humidity']} %")
+    st.write(f"🍃 Άνεμος: {current['wind_kph']} km/h")
+    st.write(f"☁️ Κατάσταση: {current['condition']['text']}")
+    st.image("https:" + current['condition']['icon'], width=64)
+else:
+    st.warning("⚠️ Δεν βρέθηκαν δεδομένα.")
 
 
