@@ -79,7 +79,7 @@ with tab4:
         <p style='color:gray;'>Μέσω WeatherAPI.com</p>
     """, unsafe_allow_html=True)
 
-    API_KEY = "[efc3e0e550ae45c98b5184129252107]"
+    API_KEY = "efc3e0e550ae45c98b5184129252107"
     city = "Corfu"
     url = f"https://api.weatherapi.com/v1/current.json?key={API_KEY}&q={city}&lang=el"
 
