@@ -1,7 +1,7 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import requests
 
 st.set_page_config(page_title="Corfu Social Dashboard", layout="wide")
 
@@ -13,36 +13,34 @@ with st.sidebar:
         ["TSI (Τουριστικός Κορεσμός)", "PFI (Πληθυσμιακή Ροή)", "DRI (Ψηφιακή Ετοιμότητα)"]
     )
     if indicator == "TSI (Τουριστικός Κορεσμός)":
-        st.info("📈 Ο δείκτης TSI αγγίζει το 1350% τον Αύγουστο, υποδεικνύοντας υπερκορεσμό κυρίως στις κεντρικές περιοχές. Ενδείκνυται ανάγκη για ανακατανομή ροών.")
+        st.info("📈 Ο δείκτης TSI αγγίζει το 1350% τον Αύγουστο, υποδεικνύοντας υπερκορεσμό κυρίως στις κεντρικές περιοχές.")
     elif indicator == "PFI (Πληθυσμιακή Ροή)":
-        st.info("👥 Η πληθυσμιακή αύξηση κατά 212% σχετίζεται με εποχικούς εργαζόμενους και τουριστική αιχμή. Πιθανά προβλήματα στην κυκλοφορία και τις υποδομές.")
+        st.info("👥 Η πληθυσμιακή αύξηση κατά 212% σχετίζεται με εποχικούς εργαζόμενους και τουριστική αιχμή.")
     elif indicator == "DRI (Ψηφιακή Ετοιμότητα)":
-        st.info("🌐 Ο δείκτης DRI παραμένει σταθερός, αλλά με υστέρηση σε αγροτικές περιοχές (π.χ. Αχαράβη). Ευκαιρία για στοχευμένες επενδύσεις.")
+        st.info("🌐 Ο δείκτης DRI παραμένει σταθερός, με υστέρηση σε αγροτικές περιοχές (π.χ. Αχαράβη).")
 
 # Tabs for dashboard
-tab1, tab2, tab3 = st.tabs(["📊 Τουρισμός", "🚗 Κυκλοφορία", "🌐 Ψηφιακή Πρόσβαση"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Τουρισμός", "🚗 Κυκλοφορία", "🌐 Ψηφιακή Πρόσβαση", "🌤 Καιρός Live (API)"])
 
 with tab1:
     st.header("📊 Δείκτες Τουριστικής Κίνησης")
     st.subheader("Αφίξεις Τουριστών στο Αεροδρόμιο Κέρκυρας (demo)")
-
     data = {
         "Μήνας": ["April", "May", "June", "July", "August", "September", "October"],
         "Αφίξεις": [45000, 65000, 98000, 130000, 145000, 85000, 32000]
     }
     df = pd.DataFrame(data)
-    fig = px.area(df, x="Μήνας", y="Αφίξεις", title="")
+    fig = px.area(df, x="Μήνας", y="Αφίξεις")
     st.plotly_chart(fig, use_container_width=True)
 
     col1, col2, col3 = st.columns(3)
     col1.metric("TSI", "1350%", "↑ +150% σε σχέση με πέρυσι")
-    col2.metric("PFI", "212%", "↑ +45% σε σχέση με τον προηγούμενο μήνα")
+    col2.metric("PFI", "212%", "↑ +45% από τον προηγούμενο μήνα")
     col3.metric("DRI", "68.2 / 100", "→ σταθερή αύξηση")
 
 with tab2:
     st.header("🚗 Δείκτης Κυκλοφοριακής Πίεσης (demo)")
     st.caption("Ανά περιοχή και ώρα")
-
     traffic_data = {
         "Περιοχή": ["Κέντρο", "Αεροδρόμιο", "Παλαιοκαστρίτσα", "Σιδάρι"],
         "08:00": [85, 70, 60, 50],
@@ -57,7 +55,6 @@ with tab2:
 
 with tab3:
     st.header("🌐 Δείκτης Ψηφιακής Πρόσβασης ανά Περιοχή (demo)")
-
     digital_data = {
         "Περιοχή": ["Κέρκυρα", "Λευκίμμη", "Αχαράβη", "Γαστούρι", "Σιδάρι"],
         "Ποσοστό Πρόσβασης (%)": [88, 79, 76, 82, 78]
@@ -65,3 +62,26 @@ with tab3:
     digital_df = pd.DataFrame(digital_data)
     fig2 = px.bar(digital_df, x="Περιοχή", y="Ποσοστό Πρόσβασης (%)", color="Ποσοστό Πρόσβασης (%)", color_continuous_scale="Blues")
     st.plotly_chart(fig2, use_container_width=True)
+
+with tab4:
+    st.header("🌤 Live Καιρικά Δεδομένα για Κέρκυρα")
+    API_KEY = "8f648f0771ee5c18dea20734783fbb7d"  # Αντικατάστησέ το με το δικό σου API key
+    city = "Corfu,GR"
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+
+    @st.cache_data(ttl=600)
+    def get_weather():
+        try:
+            res = requests.get(url)
+            return res.json()
+        except:
+            return None
+
+    weather = get_weather()
+
+    if weather and weather.get("main"):
+        st.metric("🌡 Θερμοκρασία", f"{weather['main']['temp']} °C")
+        st.metric("💧 Υγρασία", f"{weather['main']['humidity']} %")
+        st.write("📝 Περιγραφή:", weather['weather'][0]['description'].capitalize())
+    else:
+        st.warning("⚠️ Δεν βρέθηκαν δεδομένα ή λείπει το API Key.")
