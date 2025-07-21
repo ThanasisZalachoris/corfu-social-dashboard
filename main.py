@@ -107,4 +107,50 @@ if data:
 else:
     st.warning("⚠️ Δεν βρέθηκαν δεδομένα.")
 
+data = get_forecast()
+if data:
+    forecast = data['forecast']['forecastday']
+    current = data['current']
+    astro = forecast[0]['astro']
+
+    with st.expander("🌤 Τρέχουσες Συνθήκες", expanded=True):
+        condition = current['condition']['text']
+        icon = current['condition']['icon']
+        st.metric("🌡 Θερμοκρασία", f"{current['temp_c']} °C")
+        st.metric("💧 Υγρασία", f"{current['humidity']} %")
+        st.metric("🍃 Άνεμος", f"{current['wind_kph']} km/h")
+        st.write(f"🌥 Κατάσταση: {condition}")
+        st.image("https:" + icon, width=60)
+
+    with st.expander("🔮 Πρόγνωση Καιρού (3 Ημέρες)", expanded=False):
+        for day in forecast:
+            date = day['date']
+            condition = day['day']['condition']['text']
+            icon = day['day']['condition']['icon']
+            max_temp = day['day']['maxtemp_c']
+            min_temp = day['day']['mintemp_c']
+            humidity = day['day']['avghumidity']
+            wind = day['day']['maxwind_kph']
+
+            st.subheader(f"📅 {date}")
+            st.image("https:" + icon, width=50)
+            st.write(f"🌤 Κατάσταση: {condition}")
+            st.write(f"🌡 Μέγιστη: {max_temp}°C | Ελάχιστη: {min_temp}°C")
+            st.write(f"💧 Μέση Υγρασία: {humidity}%")
+            st.write(f"🍃 Μέγιστος Άνεμος: {wind} km/h")
+
+    with st.expander("🌅 Ώρες Ηλίου & Σελήνης", expanded=False):
+        st.write(f"☀️ Ανατολή Ηλίου: {astro['sunrise']}")
+        st.write(f"🌇 Δύση Ηλίου: {astro['sunset']}")
+        st.write(f"🌙 Ανατολή Σελήνης: {astro['moonrise']}")
+        st.write(f"🌘 Δύση Σελήνης: {astro['moonset']}")
+
+    if 'tide' in data:
+        with st.expander("🌊 Θαλάσσιες Συνθήκες (Tides)", expanded=False):
+            tides = data['tide']['tide']
+            for tide_entry in tides:
+                st.write(f"📌 {tide_entry['tide_type']} στις {tide_entry['tide_time']} (Ύψος: {tide_entry['tide_height_mt']} m)")
+else:
+    st.warning("⚠️ Δεν βρέθηκαν στοιχεία πρόγνωσης.")
+
 
