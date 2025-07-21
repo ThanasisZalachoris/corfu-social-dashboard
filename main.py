@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from pandas import DataFrame
 import plotly.express as px
 import requests
 
@@ -107,6 +108,19 @@ if data:
 else:
     st.warning("⚠️ Δεν βρέθηκαν δεδομένα.")
 
+@st.cache_data(ttl=600)
+def get_forecast():
+    url = f"https://api.weatherapi.com/v1/forecast.json?key={API_KEY}&q={city}&days=3&lang=el&aqi=no&alerts=no"
+    try:
+        res = requests.get(url)
+        if res.status_code == 200:
+            return res.json()
+        else:
+            st.error(f"❌ Σφάλμα API: {res.status_code}")
+            return None
+    except:
+        return None
+
 data = get_forecast()
 if data:
     forecast = data['forecast']['forecastday']
@@ -151,6 +165,5 @@ if data:
             for tide_entry in tides:
                 st.write(f"📌 {tide_entry['tide_type']} στις {tide_entry['tide_time']} (Ύψος: {tide_entry['tide_height_mt']} m)")
 else:
-    st.warning("⚠️ Δεν βρέθηκαν στοιχεία πρόγνωσης.")
-
+    st.warning("⚠️ Δεν βρέθηκαν δεδομένα.")
 
