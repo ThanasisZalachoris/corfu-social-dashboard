@@ -64,24 +64,30 @@ with tab3:
     st.plotly_chart(fig2, use_container_width=True)
 
 with tab4:
-    st.header("🌤 Live Καιρικά Δεδομένα για Κέρκυρα")
-    API_KEY = "8f648f0771ee5c18dea20734783fbb7d"  # Αντικατάστησέ το με το δικό σου API key
-    city = "Corfu,GR"
+    st.header("🌤️ Live Καιρικά Δεδομένα για Κέρκυρα")
+
+    API_KEY = "8f648f0771ee5c18dea20734783fbb7d"
+    city = "Corfu"
     url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
 
     @st.cache_data(ttl=600)
     def get_weather():
         try:
             res = requests.get(url)
-            return res.json()
+            if res.status_code == 200:
+                return res.json()
+            else:
+                st.error(f"❌ Σφάλμα API: {res.status_code}")
+                return None
         except:
             return None
 
-    weather = get_weather()
-
-    if weather and weather.get("main"):
-        st.metric("🌡 Θερμοκρασία", f"{weather['main']['temp']} °C")
-        st.metric("💧 Υγρασία", f"{weather['main']['humidity']} %")
-        st.write("📝 Περιγραφή:", weather['weather'][0]['description'].capitalize())
+    data = get_weather()
+    if data:
+        st.success(f"🌡️ Θερμοκρασία: {data['main']['temp']} °C")
+        st.write(f"💧 Υγρασία: {data['main']['humidity']}%")
+        st.write(f"💨 Άνεμος: {data['wind']['speed']} m/s")
+        st.write(f"☁️ Καιρική κατάσταση: {data['weather'][0]['description'].capitalize()}")
     else:
-        st.warning("⚠️ Δεν βρέθηκαν δεδομένα ή λείπει το API Key.")
+        st.warning("⚠️ Δεν βρέθηκαν δεδομένα.")
+
