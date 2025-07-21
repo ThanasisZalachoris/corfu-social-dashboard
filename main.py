@@ -66,9 +66,10 @@ with tab3:
 with tab4:
     st.header("🌤️ Live Καιρικά Δεδομένα για Κέρκυρα")
 
-    API_KEY = "8f648f0771ee5c18dea20734783fbb7d"
+    # Το δικό σου API key (προσοχή, να μην το δημοσιεύσεις στο GitHub)
+    API_KEY = "efc3e0e550ae45c98b5184129252107"
     city = "Corfu"
-    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+    url = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q={city}&lang=el"
 
     @st.cache_data(ttl=600)
     def get_weather():
@@ -79,15 +80,21 @@ with tab4:
             else:
                 st.error(f"❌ Σφάλμα API: {res.status_code}")
                 return None
-        except:
+        except Exception as e:
+            st.error(f"⚠️ Σφάλμα σύνδεσης: {e}")
             return None
 
     data = get_weather()
     if data:
-        st.success(f"🌡️ Θερμοκρασία: {data['main']['temp']} °C")
-        st.write(f"💧 Υγρασία: {data['main']['humidity']}%")
-        st.write(f"💨 Άνεμος: {data['wind']['speed']} m/s")
-        st.write(f"☁️ Καιρική κατάσταση: {data['weather'][0]['description'].capitalize()}")
+        current = data["current"]
+        condition = current["condition"]["text"]
+        icon_url = "https:" + current["condition"]["icon"]
+
+        st.success(f"🌡️ Θερμοκρασία: {current['temp_c']} °C")
+        st.write(f"💧 Υγρασία: {current['humidity']}%")
+        st.write(f"💨 Άνεμος: {current['wind_kph']} km/h")
+        st.write(f"☁️ Κατάσταση: {condition}")
+        st.image(icon_url, width=64)
     else:
         st.warning("⚠️ Δεν βρέθηκαν δεδομένα.")
 
